@@ -109,7 +109,7 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 	
-	if (MPU6050_Init(&MPU6050, MPU6050_Device_0, MPU6050_Accelerometer_8G, MPU6050_Gyroscope_250s) == MPU6050_Result_Ok) 
+	if (MPU6050_Init(&MPU6050, MPU6050_Device_0) == MPU6050_Result_Ok) 
 	{
 		sprintf(StrTx, "MPU6050: Exito na inicializacao\n\r");		
 		HAL_UART_Transmit(&huart2, (uint8_t*)StrTx, strlen(StrTx), 100);
@@ -140,7 +140,7 @@ int main(void)
 	}
 	else
 	{
-		sprintf(StrTx, "MPU6050: Exito na configuracao do acelerometro\n\r");		
+		sprintf(StrTx, "MPU6050: Falha na configuracao do acelerometro\n\r");		
 		HAL_UART_Transmit(&huart2, (uint8_t*)StrTx, strlen(StrTx), 100);
 	}
 	
@@ -152,10 +152,21 @@ int main(void)
 	}
 	else
 	{
-		sprintf(StrTx, "MPU6050: Exito na configuracao do giroscopio\n\r");		
+		sprintf(StrTx, "MPU6050: Falha na configuracao do giroscopio\n\r");		
 		HAL_UART_Transmit(&huart2, (uint8_t*)StrTx, strlen(StrTx), 100);
 	}
 	
+  if (MPU6050_EnableInterrupts(&MPU6050) == MPU6050_Result_Ok) 
+	{
+		sprintf(StrTx, "MPU6050: Exito na configuracao das interrupcoes\n\r");		
+		HAL_UART_Transmit(&huart2, (uint8_t*)StrTx, strlen(StrTx), 100);
+	}
+	else
+	{
+		sprintf(StrTx, "MPU6050: Falha na configuracao das interrupcoes\n\r");		
+		HAL_UART_Transmit(&huart2, (uint8_t*)StrTx, strlen(StrTx), 100);
+	}
+
 	HAL_TIM_Base_Start(&htim2);
   /* USER CODE END 2 */
 

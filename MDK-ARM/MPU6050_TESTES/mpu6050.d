@@ -35,3 +35,4 @@ mpu6050_testes\mpu6050.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_
 mpu6050_testes\mpu6050.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 mpu6050_testes\mpu6050.o: ../Core/Inc/i2c.h
 mpu6050_testes\mpu6050.o: ../Core/Inc/main.h
+mpu6050_testes\mpu6050.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h

@@ -1,94 +1,6 @@
 #ifndef MPU6050_H
 #define MPU6050_H 100
 
-/* C++ detection */
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/**
- * @addtogroup TM_STM32Fxxx_HAL_Libraries
- * @{
- */
-
-/**
- * @defgroup MPU6050
- * @brief    MPU6050 library for STM32Fxxx - http://stm32f4-discovery.net/2015/10/hal-library-30-mpu6050-for-stm32fxxx
- * @{
- *
- * \par Features
- *
- * Library supports basic operation with MPU6050 device:
- *
-\verbatim
-- Read accelerometer, gyroscope and temperature data,
-- Set custom output data rate for measurements
-- Enable/disable interrupts
-- Up to 2 MPU devices at a time
-\endverbatim
- *
- * \par MPU6050 interrupts
- *
- * When you enable interrupts using @ref MPU6050_EnableInterrupts function, 
- * "DataReady" and "MotionDetected" interrupts are enabled. 
- *
- * MPU pin for interrupt detection on STM device is rising edge and triggers on any interrupt.
- *
- * You can read interrupts status register to detect which interrupt happened using @ref MPU6050_ReadInterrupts function.
- *
- * \par MPU6050 data rate
- *
- * Device can output data at specific rate. It has 8-bit register with custom value to set data rate you need.
- *
- * Equation for data rate is below:
-\f[
-	DataRate = 
-		\frac{8 MHz}{REGVAL + 1}
-\f]
- * where:
- *  - 8 Mhz is Gyro internal output used for data rate
- *  - REGVAL is a value to be used in @ref MPU6050_SetDataRate function
- *
- * \note  There are already some predefined constants in library for some "standard" data rates
- *
- * \par Default pinout
- * 
-@verbatim
-MPU6050     STM32Fxxx     Descrption
- 
-SCL         PB6           Clock line for I2C
-SDA         PB7           Data line for I2C
-IRQ         -             User selectable pin if needed. Interrupts for STM must be manually enabled by user.
-VCC         3.3V
-GND         GND
-AD0         -             If pin is low, I2C address is 0xD0, if pin is high, the address is 0xD2
-@endverbatim
- *
- * To change default pinout for I2C, you need to open defines.h file and copy/edit some defines:
- *
-\code
-//Set I2C used
-MPU6050_I2C               I2C1  
-//Set I2C pins used
-MPU6050_I2C_PINSPACK      TM_I2C_PinsPack_1
-\endcode
- *
- * \par Changelog
- *
-@verbatim
- Version 1.0
-  - First release
-@endverbatim
- *
- * \par Dependencies
- *
-@verbatim
- - STM32Fxxx HAL
- - defines.h
- - TM I2C
-@endverbatim
- */
-
 #include "stm32f4xx_hal.h"
 #include "i2c.h"
 
@@ -177,20 +89,42 @@ typedef enum _MPU6050_Gyroscope_t {
 /**
  * @brief  Main MPU6050 structure
  */
-typedef struct _MPU6050_t {
-	/* Private */
-	uint8_t Address;         /*!< I2C address of device. Only for private use */
+typedef struct _MPU6050_t 
+{
+	uint8_t Address;
+	
 	float Gyro_Mult;         /*!< Gyroscope corrector from raw data to "degrees/s". Only for private use */
 	float Acce_Mult;         /*!< Accelerometer corrector from raw data to "g". Only for private use */
-	/* Public */
-	int16_t Accelerometer_X; /*!< Accelerometer value X axis */
-	int16_t Accelerometer_Y; /*!< Accelerometer value Y axis */
-	int16_t Accelerometer_Z; /*!< Accelerometer value Z axis */
-	int16_t Gyroscope_X;     /*!< Gyroscope value X axis */
-	int16_t Gyroscope_Y;     /*!< Gyroscope value Y axis */
-	int16_t Gyroscope_Z;     /*!< Gyroscope value Z axis */
-	float Temperature;       /*!< Temperature in degrees */
+
+	int16_t Accel_X_RAW;
+    int16_t Accel_Y_RAW;
+    int16_t Accel_Z_RAW;
+    double Ax;
+    double Ay;
+    double Az;
+
+    int16_t Gyro_X_RAW;
+    int16_t Gyro_Y_RAW;
+    int16_t Gyro_Z_RAW;
+    double Gx;
+    double Gy;
+    double Gz;
+
+    float Temperature;
+
+    double KalmanAngleX;
+    double KalmanAngleY;
 } MPU6050_t;
+
+// Kalman structure
+typedef struct {
+    double Q_angle;
+    double Q_bias;
+    double R_measure;
+    double angle;
+    double bias;
+    double P[2][2];
+} Kalman_t;
 
 /**
  * @brief  Interrupts union and structure
@@ -207,6 +141,8 @@ typedef union _MPU6050_Interrupt_t {
 	} F;
 	uint8_t Status;
 } MPU6050_Interrupt_t;
+
+double Kalman_getAngle(Kalman_t *Kalman, double newAngle, double newRate, double dt);
 
 /**
  * @}
@@ -233,7 +169,7 @@ typedef union _MPU6050_Interrupt_t {
  *            - MPU6050_Result_t: Everything OK
  *            - Other member: in other cases
  */
-MPU6050_Result_t MPU6050_Init(MPU6050_t* DataStruct, MPU6050_Device_t DeviceNumber, MPU6050_Accelerometer_t AccelerometerSensitivity, MPU6050_Gyroscope_t GyroscopeSensitivity);
+MPU6050_Result_t MPU6050_Init(MPU6050_t* DataStruct, MPU6050_Device_t DeviceNumber);
 
 /**
  * @brief  Sets gyroscope sensitivity
